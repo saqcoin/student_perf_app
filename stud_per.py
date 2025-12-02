@@ -3,6 +3,17 @@ import pandas as pd
 # import numpy as np
 import pickle
 # from sklearn.preprocessing import LabelEncoder
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
+uri = "mongodb+srv://saqrsh_db_user:ir1starQ@testcluster.sb8lqib.mongodb.net/?appName=testCluster"
+
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
+
+# create db
+db = client['student_perf']
+collection = db['performance_prediction']
 
 # Load model
 def load_model():
@@ -46,8 +57,16 @@ def main():
             "Sleep Hours" : sleep_hours,
             "Sample Question Papers Practiced" : no_paper_solved
         }
+        # print(f'before prediction {user_data = }')
         prediction = predict_data(user_data)
+        user_data['Prediction'] = float(prediction)
         st.success(f"Your predicted score in {prediction}")
+        # print(f'after prediction {user_data = }')
+        user_data.pop('Extracurricular Activities Encoded')
+        # print(user_data['Extracurricular Activities Encoded'])
+        # print(type(user_data['Extracurricular Activities Encoded']))
+        # insert_data = user_data.to_dict()
+        collection.insert_one(user_data)
 
 
 if __name__ == "__main__":
